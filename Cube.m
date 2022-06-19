@@ -184,12 +184,12 @@ classdef Cube < handle
         end
 
         function rotateFPrime(cube)
-            f = cube.faces(Color.Green.toInt()).rotateCounterClockwise();
+            f = cube.faces(Color.Green.toInt());
             f.rotateCounterClockwise();
         end
 
         function rotateF2(cube)
-            f = cube.faces(Color.Green.toInt()).rotateCounterClockwise();
+            f = cube.faces(Color.Green.toInt());
             f.rotateClockwise();
             f.rotateClockwise();
         end
