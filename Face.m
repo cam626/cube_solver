@@ -35,17 +35,18 @@ classdef Face < handle
             face.rotateGridClockwise();
             
             clockwiseDirections = [Direction.Top Direction.Right Direction.Bottom Direction.Left];
-%             flips = face.getFlipsForColor();
+            flips = face.getFlipsForColor();
 
-            face.rotateBorderingLines(clockwiseDirections);
+            face.rotateBorderingLines(clockwiseDirections, flips);
         end
 
         function rotateCounterClockwise(face)
             face.rotateGridCounterClockwise();
     
             counterClockwiseDirections = [Direction.Top Direction.Left Direction.Bottom Direction.Right];
+            flips = flip(face.getFlipsForColor());
 
-            face.rotateBorderingLines(counterClockwiseDirections);
+            face.rotateBorderingLines(counterClockwiseDirections, flips);
         end
 
         function row = getRow(face, rowNum)
@@ -106,7 +107,7 @@ classdef Face < handle
             face.grid = ones(3, 'uint32') * face.baseColor;
         end
 
-        function rotateBorderingLines(face, borderingDirections)
+        function rotateBorderingLines(face, borderingDirections, flips)
             lines = zeros(4, 3);
             for directionIndex = 1:numel(borderingDirections)
                 direction = borderingDirections(directionIndex);
@@ -115,7 +116,13 @@ classdef Face < handle
 
             for directionIndex = 1:numel(borderingDirections)
                 direction = borderingDirections(mod(directionIndex, 4)+1);
-                face.setClosestLineFromNeighboringFace(direction, lines(directionIndex,:));
+
+                lineToSet = lines(directionIndex, :);
+                if flips(directionIndex)
+                    lineToSet = flip(lineToSet);
+                end
+
+                face.setClosestLineFromNeighboringFace(direction, lineToSet);
             end
         end
 
@@ -146,7 +153,18 @@ classdef Face < handle
         end
 
         function flips = getFlipsForColor(face)
-
+            switch face.baseColor
+                case Color.White
+                    flips = [1 0 0 1];
+                case Color.Yellow
+                    flips = [0 1 1 0];
+                case Color.Blue
+                    flips = [1 0 1 0];
+                case Color.Green
+                    flips = [0 1 0 1];
+                otherwise
+                    flips = [0 0 0 0];
+            end
         end
 
         function line = getLineInDirection(face, direction)
