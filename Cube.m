@@ -1,6 +1,7 @@
 classdef Cube < handle
     properties
         faces
+        ax3d
     end
 
     methods
@@ -20,6 +21,10 @@ classdef Cube < handle
             else
                 cube.rotateClockwise(move);
             end
+
+            if ~isempty(cube.ax3d)
+                cube.show();
+            end
         end
         
         function solved = isSolved(cube)
@@ -36,12 +41,26 @@ classdef Cube < handle
             solved = true;
         end
 
+        function reset(cube)
+            for faceColor = keys(cube.faces)
+                face = cube.faces(faceColor{1});
+
+                face.reset();
+            end
+
+            if ~isempty(cube.ax3d)
+                cube.show();
+            end
+        end
+
         function show(cube)
-            ax = Cube.createCubeAxes();
+            if isempty(cube.ax3d)
+                cube.ax3d = Cube.createCubeAxes();
+            end
 
             for faceColor = keys(cube.faces)
                 face = cube.faces(faceColor{1});
-                face.show(ax)
+                face.show(cube.ax3d);
             end
         end
     end

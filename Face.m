@@ -15,6 +15,9 @@ classdef Face < handle
         % All of the patches coordinates needed to render this Face
         % (9 patches). This is set by the FaceFactory on creation.
         patchLocations
+
+        % Handles to the patches that were created to render this Face.
+        patches
     end
     
     methods
@@ -32,6 +35,7 @@ classdef Face < handle
             face.rotateGridClockwise();
             
             clockwiseDirections = [Direction.Top Direction.Right Direction.Bottom Direction.Left];
+%             flips = face.getFlipsForColor();
 
             face.rotateBorderingLines(clockwiseDirections);
         end
@@ -64,19 +68,15 @@ classdef Face < handle
             solved = all(face.grid == face.baseColor);
         end
 
+        function reset(face)
+            face.initializeGrid();
+        end
+
         function show(face, ax)
-            for patchX = 1:3
-                for patchY = 1:3
-                    patchCoordinates = face.patchLocations{patchX, patchY};
-
-                    xData = patchCoordinates(:, 1);
-                    yData = patchCoordinates(:, 2);
-                    zData = patchCoordinates(:, 3);
-
-                    colStr = Face.getColorString(face.colorAt(patchX, patchY));
-
-                    patch(ax, xData, yData, zData, colStr);
-                end
+            if numel(face.patches) ~= 0
+                face.updatePatches();
+            else
+                face.createNewPatches(ax);
             end
         end
     end
@@ -145,6 +145,10 @@ classdef Face < handle
             face.grid = rot90(face.grid);
         end
 
+        function flips = getFlipsForColor(face)
+
+        end
+
         function line = getLineInDirection(face, direction)
             if direction == Direction.Top
                 line = face.getRow(1);
@@ -166,6 +170,37 @@ classdef Face < handle
                 face.setCol(1, newLine);
             elseif direction == Direction.Right
                 face.setCol(3, newLine);
+            end
+        end
+
+        function createNewPatches(face, ax)
+            face.patches = cell(3);
+
+            for patchX = 1:3
+                for patchY = 1:3
+                    patchCoordinates = face.patchLocations{patchX, patchY};
+
+                    xData = patchCoordinates(:, 1);
+                    yData = patchCoordinates(:, 2);
+                    zData = patchCoordinates(:, 3);
+
+                    colStr = Face.getColorString(face.colorAt(patchX, patchY));
+
+                    p = patch(ax, xData, yData, zData, colStr);
+                    face.patches{patchX, patchY} = p;
+                end
+            end
+        end
+
+        function updatePatches(face)
+            for patchX = 1:3
+                for patchY = 1:3
+                    p = face.patches{patchX, patchY};
+
+                    colStr = Face.getColorString(face.colorAt(patchX, patchY));
+
+                    p.FaceColor = colStr;
+                end
             end
         end
 
