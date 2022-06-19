@@ -12,11 +12,6 @@ classdef Cube < handle
             generator.createPatches(cube, 1);
         end
 
-        function createFaces(cube)
-            factory = FaceFactory;
-            cube.faces = factory.getFaces();
-        end
-
         function rotate(cube, move, primeFlag)
             if move.is2Move()
                 cube.rotate2Move(move);
@@ -25,6 +20,47 @@ classdef Cube < handle
             else
                 cube.rotateClockwise(move);
             end
+        end
+        
+        function solved = isSolved(cube)
+            for faceColor = keys(cube.faces)
+                face = cube.faces(faceColor{1});
+
+                % The cube is not solved if any face is not solved
+                if ~face.isSolved
+                    solved = false;
+                    return;
+                end
+            end
+
+            solved = true;
+        end
+
+        function show(cube)
+            ax = Cube.createCubeAxes();
+
+            for faceColor = keys(cube.faces)
+                face = cube.faces(faceColor{1});
+                face.show(ax)
+            end
+        end
+    end
+
+    methods (Static)
+        function ax = createCubeAxes()
+            ax = axes();
+
+            xlim(ax, [0 4]);
+            ylim(ax, [0 4]);
+            zlim(ax, [0 4]);
+        end
+    end
+
+    methods (Access=private)
+
+        function createFaces(cube)
+            factory = FaceFactory;
+            cube.faces = factory.getFaces();
         end
 
         function rotateCounterClockwise(cube, move)
@@ -78,27 +114,6 @@ classdef Cube < handle
             end
         end
 
-        function show(cube)
-            ax = Cube.createCubeAxes();
-
-            for faceColor = keys(cube.faces)
-                face = cube.faces(faceColor{1});
-                face.show(ax)
-            end
-        end
-    end
-
-    methods (Static)
-        function ax = createCubeAxes()
-            ax = axes();
-
-            xlim(ax, [0 4]);
-            ylim(ax, [0 4]);
-            zlim(ax, [0 4]);
-        end
-    end
-
-    methods (Access=private)
         function rotateU(cube)
             f = cube.faces(Color.White.toInt());
             f.rotateClockwise();

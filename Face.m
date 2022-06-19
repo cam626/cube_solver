@@ -23,10 +23,6 @@ classdef Face < handle
 
             face.initializeGrid();
         end
-        
-        function initializeGrid(face)
-            face.grid = ones(3, 'uint32') * face.baseColor;
-        end
 
         function color = colorAt(face, row, col)
             color = Color(face.grid(row, col));
@@ -46,6 +42,68 @@ classdef Face < handle
             counterClockwiseDirections = [Direction.Top Direction.Left Direction.Bottom Direction.Right];
 
             face.rotateBorderingLines(counterClockwiseDirections);
+        end
+
+        function row = getRow(face, rowNum)
+            row = face.grid(rowNum, :);
+        end
+
+        function col = getCol(face, colNum)
+            col = face.grid(:, colNum);
+        end
+
+        function setRow(face, rowNum, newRow)
+            face.grid(rowNum, :) = newRow;
+        end
+
+        function setCol(face, colNum, newCol)
+            face.grid(:, colNum) = newCol;
+        end
+
+        function solved = isSolved(face)
+            solved = all(face.grid == face.baseColor);
+        end
+
+        function show(face, ax)
+            for patchX = 1:3
+                for patchY = 1:3
+                    patchCoordinates = face.patchLocations{patchX, patchY};
+
+                    xData = patchCoordinates(:, 1);
+                    yData = patchCoordinates(:, 2);
+                    zData = patchCoordinates(:, 3);
+
+                    colStr = Face.getColorString(face.colorAt(patchX, patchY));
+
+                    patch(ax, xData, yData, zData, colStr);
+                end
+            end
+        end
+    end
+
+    methods (Static)
+        function colStr = getColorString(color)
+            switch color
+                case Color.White
+                    colStr = 'w';
+                case Color.Green
+                    colStr = 'g';
+                case Color.Yellow
+                    colStr = 'y';
+                case Color.Blue
+                    colStr = 'b';
+                case Color.Orange
+                    colStr = 'm';
+                case Color.Red
+                    colStr = 'r';
+            end
+        end
+    end
+
+    methods (Access=private)
+        
+        function initializeGrid(face)
+            face.grid = ones(3, 'uint32') * face.baseColor;
         end
 
         function rotateBorderingLines(face, borderingDirections)
@@ -87,22 +145,6 @@ classdef Face < handle
             face.grid = rot90(face.grid);
         end
 
-        function row = getRow(face, rowNum)
-            row = face.grid(rowNum, :);
-        end
-
-        function col = getCol(face, colNum)
-            col = face.grid(:, colNum);
-        end
-
-        function setRow(face, rowNum, newRow)
-            face.grid(rowNum, :) = newRow;
-        end
-
-        function setCol(face, colNum, newCol)
-            face.grid(:, colNum) = newCol;
-        end
-
         function line = getLineInDirection(face, direction)
             if direction == Direction.Top
                 line = face.getRow(1);
@@ -127,41 +169,6 @@ classdef Face < handle
             end
         end
 
-        function show(face, ax)
-            for patchX = 1:3
-                for patchY = 1:3
-                    patchCoordinates = face.patchLocations{patchX, patchY};
-
-                    xData = patchCoordinates(:, 1);
-                    yData = patchCoordinates(:, 2);
-                    zData = patchCoordinates(:, 3);
-
-                    colStr = Face.getColorString(face.colorAt(patchX, patchY));
-
-                    patch(ax, xData, yData, zData, colStr);
-                end
-            end
-        end
-    end
-
-    methods (Static)
-        function colStr = getColorString(color)
-            switch color
-                case Color.White
-                    colStr = 'w';
-                case Color.Green
-                    colStr = 'g';
-                case Color.Yellow
-                    colStr = 'y';
-                case Color.Blue
-                    colStr = 'b';
-                case Color.Orange
-                    colStr = 'm';
-                case Color.Red
-                    colStr = 'r';
-
-            end
-        end
     end
 end
 
