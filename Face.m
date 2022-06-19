@@ -65,6 +65,10 @@ classdef Face < handle
             face.grid(:, colNum) = newCol;
         end
 
+        function n = numIncorrect(face)
+            n = sum(face.grid ~= face.baseColor, 'all');
+        end
+
         function solved = isSolved(face)
             solved = all(face.grid == face.baseColor);
         end

@@ -22,6 +22,22 @@ classdef Utils
                 name = strcat(name, " Prime");
             end
         end
+
+        function invertedMoveList = invertMoveList(moveList)
+            invertedMoveList = cell(size(moveList));
+            
+            for moveIndex = 1:size(moveList, 1)
+                move = moveList{moveIndex, 1};
+                primeFlag = moveList{moveIndex, 2};
+
+                flippedPrimeFlag = abs(primeFlag-1);
+
+                invertedMoveIndex = size(invertedMoveList, 1) - moveIndex + 1;
+                
+                invertedMoveList{invertedMoveIndex, 1} = move;
+                invertedMoveList{invertedMoveIndex, 2} = flippedPrimeFlag;
+            end
+        end
     end
 end
 
