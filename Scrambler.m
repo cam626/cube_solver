@@ -25,25 +25,32 @@ classdef Scrambler < handle
     methods (Access=private)
 
         function initialize(scrambler, numMoves)
+            scrambler.nextMoveNum = 1;
             scrambler.numMoves = numMoves;
 
             % Allocate space for all moves in the scramble
-            scrambler.moveList = cell(numMoves, 2);
+            scrambler.moveList = zeros(1, numMoves);
 
             scrambler.inSamePlane = containers.Map('KeyType', 'uint32', 'ValueType', 'any');
 
-            scrambler.inSamePlane(Move.Up.toInt()) = [Move.Up2, Move.Down, Move.Down2];
-            scrambler.inSamePlane(Move.Up2.toInt()) = [Move.Up, Move.Down, Move.Down2];
-            scrambler.inSamePlane(Move.Down.toInt()) = [Move.Up2, Move.Up, Move.Down2];
-            scrambler.inSamePlane(Move.Down2.toInt()) = [Move.Up2, Move.Up, Move.Down];
-            scrambler.inSamePlane(Move.Left.toInt()) = [Move.Left2, Move.Right, Move.Right2];
-            scrambler.inSamePlane(Move.Left2.toInt()) = [Move.Left, Move.Right, Move.Right2];
-            scrambler.inSamePlane(Move.Right.toInt()) = [Move.Right2, Move.Left, Move.Left2];
-            scrambler.inSamePlane(Move.Right2.toInt()) = [Move.Right, Move.Left, Move.Left2];
-            scrambler.inSamePlane(Move.Front.toInt()) = [Move.Front2, Move.Back, Move.Back2];
-            scrambler.inSamePlane(Move.Front2.toInt()) = [Move.Front, Move.Back, Move.Back2];
-            scrambler.inSamePlane(Move.Back.toInt()) = [Move.Back2, Move.Front, Move.Front2];
-            scrambler.inSamePlane(Move.Back2.toInt()) = [Move.Back, Move.Front, Move.Front2];
+            scrambler.inSamePlane(Move.Up.toInt()) = [Move.DownPrime, Move.UpPrime, Move.Up2, Move.Down, Move.Down2];
+            scrambler.inSamePlane(Move.Up2.toInt()) = [Move.DownPrime, Move.UpPrime, Move.Up, Move.Down, Move.Down2];
+            scrambler.inSamePlane(Move.UpPrime.toInt()) = [Move.DownPrime, Move.Up2, Move.Up, Move.Down, Move.Down2];
+            scrambler.inSamePlane(Move.Down.toInt()) = [Move.DownPrime, Move.UpPrime, Move.Up2, Move.Up, Move.Down2];
+            scrambler.inSamePlane(Move.Down2.toInt()) = [Move.DownPrime, Move.UpPrime, Move.Up2, Move.Up, Move.Down];
+            scrambler.inSamePlane(Move.DownPrime.toInt()) = [Move.Down2, Move.UpPrime, Move.Up2, Move.Up, Move.Down];
+            scrambler.inSamePlane(Move.Left.toInt()) = [Move.LeftPrime, Move.RightPrime, Move.Left2, Move.Right, Move.Right2];
+            scrambler.inSamePlane(Move.Left2.toInt()) = [Move.LeftPrime, Move.RightPrime, Move.Left, Move.Right, Move.Right2];
+            scrambler.inSamePlane(Move.LeftPrime.toInt()) = [Move.Left2, Move.RightPrime, Move.Left, Move.Right, Move.Right2];
+            scrambler.inSamePlane(Move.Right.toInt()) = [Move.LeftPrime, Move.RightPrime, Move.Right2, Move.Left, Move.Left2];
+            scrambler.inSamePlane(Move.Right2.toInt()) = [Move.LeftPrime, Move.RightPrime, Move.Right, Move.Left, Move.Left2];
+            scrambler.inSamePlane(Move.RightPrime.toInt()) = [Move.LeftPrime, Move.Right2, Move.Right, Move.Left, Move.Left2];
+            scrambler.inSamePlane(Move.Front.toInt()) = [Move.FrontPrime, Move.BackPrime, Move.Front2, Move.Back, Move.Back2];
+            scrambler.inSamePlane(Move.Front2.toInt()) = [Move.FrontPrime, Move.BackPrime, Move.Front, Move.Back, Move.Back2];
+            scrambler.inSamePlane(Move.FrontPrime.toInt()) = [Move.Front2, Move.BackPrime, Move.Front, Move.Back, Move.Back2];
+            scrambler.inSamePlane(Move.Back.toInt()) = [Move.FrontPrime, Move.BackPrime, Move.Back2, Move.Front, Move.Front2];
+            scrambler.inSamePlane(Move.Back2.toInt()) = [Move.FrontPrime, Move.BackPrime, Move.Back, Move.Front, Move.Front2];
+            scrambler.inSamePlane(Move.BackPrime.toInt()) = [Move.FrontPrime, Move.Back2, Move.Back, Move.Front, Move.Front2];
         end
 
         function createScramble(scrambler)
@@ -53,10 +60,9 @@ classdef Scrambler < handle
         end
 
         function addMoveToScramble(scrambler)
-            newMovePair = scrambler.chooseNextMove();
+            newMove = scrambler.chooseNextMove();
 
-            scrambler.moveList{scrambler.nextMoveNum, 1} = newMovePair{1};
-            scrambler.moveList{scrambler.nextMoveNum, 2} = newMovePair{2};
+            scrambler.moveList(scrambler.nextMoveNum) = newMove;
             scrambler.nextMoveNum = scrambler.nextMoveNum + 1;
         end
 
@@ -72,11 +78,10 @@ classdef Scrambler < handle
 
         function possibleMoves = disallowRepeatedMoves(scrambler, possibleMoves)
             if scrambler.nextMoveNum > 1
-                lastMovePair = scrambler.getLastMove();
-                lastMove = lastMovePair{1};
-                altLastMove = lastMove.getAltMove();
+                lastMove = Move(scrambler.getLastMove());
+                sameFaceMoves = lastMove.getSameFaceMoves();
 
-                possibleMoves = setdiff(possibleMoves, [lastMove, altLastMove]);
+                possibleMoves = setdiff(possibleMoves, [lastMove, sameFaceMoves]);
             end
         end
 
@@ -95,24 +100,19 @@ classdef Scrambler < handle
             end
         end
 
-        function lastMovePair = getLastMove(scrambler)
-            lastMovePair{1} = scrambler.moveList{scrambler.nextMoveNum-1, 1};
-            lastMovePair{2} = scrambler.moveList{scrambler.nextMoveNum-1, 2};
+        function lastMove = getLastMove(scrambler)
+            lastMove = scrambler.moveList(scrambler.nextMoveNum-1);
         end
 
-        function lastMovePair = getSecondLastMove(scrambler)
-            lastMovePair{1} = scrambler.moveList{scrambler.nextMoveNum-2, 1};
-            lastMovePair{2} = scrambler.moveList{scrambler.nextMoveNum-2, 2};
+        function lastMove = getSecondLastMove(scrambler)
+            lastMove = scrambler.moveList(scrambler.nextMoveNum-2);
         end
     end
 
     methods (Static)
 
-        function movePair = chooseRandomMove(possibleMoves)
+        function newMove = chooseRandomMove(possibleMoves)
             newMove = randsample(possibleMoves, 1);
-            primeFlag = logical(randi(2) - 1);
-
-            movePair = {newMove, primeFlag};
         end
 
     end

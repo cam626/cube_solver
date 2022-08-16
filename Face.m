@@ -69,6 +69,10 @@ classdef Face < handle
             n = sum(face.grid ~= face.baseColor, 'all');
         end
 
+        function n = numCorrect(face)
+            n = sum(face.grid == face.baseColor, 'all');
+        end
+
         function solved = isSolved(face)
             solved = all(face.grid == face.baseColor);
         end
@@ -82,6 +86,19 @@ classdef Face < handle
                 face.updatePatches();
             else
                 face.createNewPatches(ax);
+            end
+        end
+    
+        function flat = flatten(face)
+            flat = face.grid(:);
+        end
+
+        function masks = generateMasks(face)
+            masks = zeros(6,3,3);
+
+            colors = enumeration('Color');
+            for color = 1:numel(colors)
+                masks(color,:,:) = uint32(face.grid == color);
             end
         end
     end

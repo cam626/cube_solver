@@ -12,6 +12,12 @@ classdef Move < uint32
         Front2  (10)
         Back    (11)
         Back2   (12)
+        UpPrime (13)
+        DownPrime (14)
+        LeftPrime (15)
+        RightPrime (16)
+        FrontPrime (17)
+        BackPrime (18)
     end
 
     methods
@@ -29,6 +35,18 @@ classdef Move < uint32
                     strName = "Front";
                 case Move.Back
                     strName = "Back";
+                case Move.UpPrime
+                    strName = "UpPrime";
+                case Move.DownPrime
+                    strName = "DownPrime";
+                case Move.LeftPrime
+                    strName = "LeftPrime";
+                case Move.RightPrime
+                    strName = "RightPrime";
+                case Move.FrontPrime
+                    strName = "FrontPrime";
+                case Move.BackPrime
+                    strName = "BackPrime";
                 case Move.Up2
                     strName = "Up2";
                 case Move.Down2
@@ -52,11 +70,13 @@ classdef Move < uint32
             res = ismember(move, [Move.Up2 Move.Down2 Move.Left2 Move.Right2 Move.Front2 Move.Back2]);
         end
     
-        function altMove = getAltMove(move)
+        function sameFaceMoves = getSameFaceMoves(move)
             if move.is2Move()
-                altMove = move.getSingleVersion();
+                sameFaceMoves = [move.getSingleVersion(), ...
+                                 move.getPrimeVersion()];
             else
-                altMove = move.getDoubleVersion();
+                sameFaceMoves = [move.getDoubleVersion(), ...
+                                 move.getInvertMove()];
             end
         end
 
@@ -73,6 +93,18 @@ classdef Move < uint32
                 case Move.Front
                     doubleMove = Move.Front2;
                 case Move.Back
+                    doubleMove = Move.Back2;
+                case Move.UpPrime
+                    doubleMove = Move.Up2;
+                case Move.DownPrime
+                    doubleMove = Move.Down2;
+                case Move.LeftPrime
+                    doubleMove = Move.Left2;
+                case Move.RightPrime
+                    doubleMove = Move.Right2;
+                case Move.FrontPrime
+                    doubleMove = Move.Front2;
+                case Move.BackPrime
                     doubleMove = Move.Back2;
             end
         end
@@ -91,6 +123,66 @@ classdef Move < uint32
                     doubleMove = Move.Front;
                 case Move.Back2
                     doubleMove = Move.Back;
+            end
+        end
+
+        function primeMove = getPrimeVersion(move)
+            switch move
+                case Move.Up
+                    primeMove = Move.UpPrime;
+                case Move.Down
+                    primeMove = Move.DownPrime;
+                case Move.Left
+                    primeMove = Move.LeftPrime;
+                case Move.Right
+                    primeMove = Move.RightPrime;
+                case Move.Front
+                    primeMove = Move.FrontPrime;
+                case Move.Back
+                    primeMove = Move.BackPrime;
+                case Move.Up2
+                    primeMove = Move.UpPrime;
+                case Move.Down2
+                    primeMove = Move.DownPrime;
+                case Move.Left2
+                    primeMove = Move.LeftPrime;
+                case Move.Right2
+                    primeMove = Move.RightPrime;
+                case Move.Front2
+                    primeMove = Move.FrontPrime;
+                case Move.Back2
+                    primeMove = Move.BackPrime;
+            end
+        end
+
+        function invertMove = getInvertMove(move)
+            switch move
+                case Move.Up
+                    invertMove = Move.UpPrime;
+                case Move.Down
+                    invertMove = Move.DownPrime;
+                case Move.Left
+                    invertMove = Move.LeftPrime;
+                case Move.Right
+                    invertMove = Move.RightPrime;
+                case Move.Front
+                    invertMove = Move.FrontPrime;
+                case Move.Back
+                    invertMove = Move.BackPrime;
+                case Move.UpPrime
+                    invertMove = Move.Up;
+                case Move.DownPrime
+                    invertMove = Move.Down;
+                case Move.LeftPrime
+                    invertMove = Move.Left;
+                case Move.RightPrime
+                    invertMove = Move.Right;
+                case Move.FrontPrime
+                    invertMove = Move.Front;
+                case Move.BackPrime
+                    invertMove = Move.Back;
+                otherwise
+                    invertMove = move;
             end
         end
     end

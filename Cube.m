@@ -13,14 +13,8 @@ classdef Cube < handle
             generator.createPatches(cube, 1);
         end
 
-        function rotate(cube, move, primeFlag)
-            if move.is2Move()
-                cube.rotate2Move(move);
-            elseif primeFlag
-                cube.rotateCounterClockwise(move);
-            else
-                cube.rotateClockwise(move);
-            end
+        function rotate(cube, move)
+            cube.rotateSwitch(move)
 
             if ~isempty(cube.ax3d)
                 cube.show();
@@ -63,6 +57,27 @@ classdef Cube < handle
                 face.show(cube.ax3d);
             end
         end
+
+        function flat = flatten(cube)
+            flat = zeros(54,1);
+
+            ind = 1;
+            for faceColor = keys(cube.faces)
+                face = cube.faces(faceColor{1});
+                flat((ind-1)*9+1:ind*9) = face.flatten();
+                ind = ind + 1;
+            end
+        end
+
+        function masks = generateMasks(cube)
+            masks = zeros(6,6,3,3);
+
+            for faceColor = keys(cube.faces)
+                face = cube.faces(faceColor{1});
+                
+                masks(face.baseColor.toInt(),:,:,:) = face.generateMasks();
+            end
+        end
     end
 
     methods (Static)
@@ -82,25 +97,20 @@ classdef Cube < handle
             cube.faces = factory.getFaces();
         end
 
-        function rotateCounterClockwise(cube, move)
+        function rotateSwitch(cube, move)
             switch move
-                case Move.Up
+                case Move.UpPrime
                     cube.rotateUPrime();
-                case Move.Down
+                case Move.DownPrime
                     cube.rotateDPrime();
-                case Move.Left
+                case Move.LeftPrime
                     cube.rotateLPrime();
-                case Move.Right
+                case Move.RightPrime
                     cube.rotateRPrime();
-                case Move.Front
+                case Move.FrontPrime
                     cube.rotateFPrime();
-                case Move.Back
+                case Move.BackPrime
                     cube.rotateBPrime();
-            end
-        end
-
-        function rotateClockwise(cube, move)
-            switch move
                 case Move.Up
                     cube.rotateU();
                 case Move.Down
@@ -113,11 +123,6 @@ classdef Cube < handle
                     cube.rotateF();
                 case Move.Back
                     cube.rotateB();
-            end
-        end
-
-        function rotate2Move(cube, move)
-            switch move
                 case Move.Up2
                     cube.rotateU2();
                 case Move.Down2
