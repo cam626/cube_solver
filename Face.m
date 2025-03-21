@@ -49,6 +49,14 @@ classdef Face < handle
             face.rotateBorderingLines(counterClockwiseDirections, flips);
         end
 
+        function setGrid(face, aGrid)
+            face.grid = aGrid;
+        end
+
+        function grid = getGrid(face)
+            grid = face.grid;
+        end
+
         function row = getRow(face, rowNum)
             row = face.grid(rowNum, :);
         end
@@ -100,6 +108,10 @@ classdef Face < handle
             for color = 1:numel(colors)
                 masks(color,:,:) = uint32(face.grid == color);
             end
+        end
+
+        function doesHavePatchLocations = hasPatchLocations(face)
+            doesHavePatchLocations = ~isempty(face.patchLocations);
         end
     end
 

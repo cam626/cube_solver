@@ -7,10 +7,6 @@ classdef Cube < handle
     methods
         function cube = Cube()
             cube.createFaces()
-
-            % Attaches the patchLocations to the cube's faces
-            generator = CubePatchGenerator;
-            generator.createPatches(cube, 1);
         end
 
         function rotate(cube, move)
@@ -18,6 +14,27 @@ classdef Cube < handle
 
             if ~isempty(cube.ax3d)
                 cube.show();
+            end
+        end
+        
+        function applyMoveList(cube, moveList)
+            for moveNum = 1:numel(moveList)
+                cube.rotate(moveList(moveNum));
+            end
+        end
+
+        function setStateFromPrediction(cube, predictedState)
+            [~, colors] = max(predictedState, [], 2);
+
+            rawFaces = reshape(colors, 6, 3, 3);
+            cube.setStateFromRawFaces(rawFaces);
+        end
+
+        function setStateFromRawFaces(cube, rawFaces)
+            for faceColor = keys(cube.faces)
+                face = cube.faces(faceColor{1});
+
+                face.setGrid(squeeze(rawFaces(faceColor{1}, :, :)));
             end
         end
         
@@ -48,6 +65,13 @@ classdef Cube < handle
         end
 
         function show(cube)
+            if ~cube.faces(1).hasPatchLocations()
+                % Attaches the patchLocations to the cube's faces so that we
+                % know where to render them.
+                generator = CubePatchGenerator;
+                generator.createPatches(cube, 1);
+            end
+
             if isempty(cube.ax3d)
                 cube.ax3d = Cube.createCubeAxes();
             end
@@ -58,7 +82,45 @@ classdef Cube < handle
             end
         end
 
+        function show2d(cube)
+            facesListArray = cube.generateFacesListArray();
+            pcolor(facesListArray');
+
+            cmap = [0 0 0; 1 1 1; 0 1 0; 1 1 0; 0 0 1; 1 0 0; 1 0.647 0];
+            colormap(cmap);
+        end
+
+        function show2dComparison(cube, otherCube)
+            facesListArray = cube.generateFacesListArray();
+            otherFacesListArray = otherCube.generateFacesListArray();
+            solvedCube = Cube;
+            solvedCubeFacesListArray = solvedCube.generateFacesListArray();
+
+            % Put the cube face list arrays all into one large array with a
+            % bit of visual separation between them
+            comparisonArray = zeros(3*3 + 2 + 1, 6*3 + 1);
+            comparisonArray(1:3, 1:end) = facesListArray(1:end, 1:3)';
+            comparisonArray(5:7, 1:end) = otherFacesListArray(1:end, 1:3)';
+            comparisonArray(9:11, 1:end) = solvedCubeFacesListArray(1:end, 1:3)';
+
+            pcolor(comparisonArray);
+
+            cmap = [0 0 0; 1 1 1; 0 1 0; 1 1 0; 0 0 1; 1 0 0; 1 0.647 0];
+            colormap(cmap);
+        end
+
+        function facesListArray = generateFacesListArray(cube)
+            facesListArray = zeros(3*6+1, 3+1);
+            for faceColor = keys(cube.faces)
+                face = cube.faces(faceColor{1});
+
+                faceStart = (faceColor{1} - 1) * 3 + 1;
+                facesListArray(faceStart:faceStart+2, 1:3) = face.getGrid();
+            end
+        end
+
         function flat = flatten(cube)
+            % Flattens the cube to a vector of Colors
             flat = zeros(54,1);
 
             ind = 1;
@@ -70,12 +132,25 @@ classdef Cube < handle
         end
 
         function masks = generateMasks(cube)
+            % Generates one-hot encoded color masks for each face of the
+            % cube
             masks = zeros(6,6,3,3);
 
             for faceColor = keys(cube.faces)
                 face = cube.faces(faceColor{1});
                 
                 masks(face.baseColor.toInt(),:,:,:) = face.generateMasks();
+            end
+        end
+
+        function rawFaces = toRawFaces(cube)
+            % Collects the Colors of each face in the cube
+            rawFaces = zeros(6, 3, 3);
+
+            for faceColor = keys(cube.faces)
+                face = cube.faces(faceColor{1});
+                
+                rawFaces(faceColor{1}, :, :) = face.getGrid();
             end
         end
     end

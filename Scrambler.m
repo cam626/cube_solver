@@ -11,7 +11,7 @@ classdef Scrambler < handle
         function moveList = scramble(scrambler, cube, numMoves)
             moveList = scrambler.getScramble(numMoves);
 
-            Utils.applyMoveList(cube, moveList);
+            cube.applyMoveList(moveList);
         end
 
         function moveList = getScramble(scrambler, numMoves)

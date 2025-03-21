@@ -1,11 +1,5 @@
 classdef Utils
     methods (Static)
-        function applyMoveList(cube, moveList)
-            for moveNum = 1:numel(moveList)
-                cube.rotate(moveList(moveNum));
-            end
-        end
-
         function dispMoveList(moveList)
             for moveNum = numel(moveList)
                 move = moveList(moveNum);
